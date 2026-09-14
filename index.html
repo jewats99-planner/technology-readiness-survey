@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Technology Implementation Readiness Survey</title>
+<title>Technology Investment Reality Check</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--navy:#24384a;--gold:#a89562;--cream:#f3f0e8;--paper:#fffdf8;--ink:#27323b;--line:#d8d1c1;--soft:#edf2f4}
-*{box-sizing:border-box} body{margin:0;background:var(--cream);color:var(--ink);font-family:Segoe UI,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Segoe UI,Arial,sans-serif}
 main{max-width:900px;margin:auto;padding:24px 14px 50px}.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:16px}
-h1,h2,h3{color:var(--navy)} h1{margin-top:0}.note,.analysis,.next{padding:14px;border-radius:9px;margin:14px 0}
-.note{background:#f2eddf;border-left:5px solid var(--gold)}.analysis{background:var(--soft);border-left:5px solid var(--navy)}.next{background:#f7f4eb;border:1px solid var(--line)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px} select,textarea,input[type=text],input[type=email]{width:100%;max-width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit}
-.q{padding:18px 0;border-top:1px solid var(--line)}.qtitle{font-weight:700;font-size:17px;margin-bottom:8px}
+h1,h2,h3{color:var(--navy)}h1{margin-top:0}.note,.analysis,.next,.guidance{padding:14px;border-radius:9px;margin:14px 0}
+.note,.guidance{background:#f2eddf;border-left:5px solid var(--gold)}.analysis{background:var(--soft);border-left:5px solid var(--navy)}.next{background:#f7f4eb;border:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}select,textarea,input[type=text],input[type=email]{width:100%;max-width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.q{padding:18px 0;border-top:1px solid var(--line)}.qtitle{font-weight:700;font-size:17px;margin-bottom:8px;color:var(--navy)}.qprompt{margin:6px 0 10px}
 .opt,.fb{display:flex;gap:9px;align-items:flex-start;padding:11px;margin:8px 0;background:#fff;border:1px solid var(--line);border-radius:9px;cursor:pointer}
 button{padding:11px 16px;border:0;border-radius:9px;font:inherit;font-weight:700;cursor:pointer}.primary{background:var(--navy);color:white}.secondary{background:#e8e5dc;color:var(--navy)}
 #results,#followup,#thanks{display:none}.score{font-size:42px;font-weight:800;color:var(--navy)}.rating{font-size:21px;font-weight:700;color:var(--gold)}
@@ -21,9 +21,11 @@ button{padding:11px 16px;border:0;border-radius:9px;font:inherit;font-weight:700
 </style>
 </head>
 <body><main>
-<section class="card"><h1>Technology Implementation Readiness Survey</h1>
-<p>This brief assessment helps evaluate organizational readiness for a technology implementation.</p>
-<div class="note"><b>Anonymous by design.</b> The assessment does not ask for identifying information.</div></section>
+<section class="card"><h1>Technology Investment Reality Check</h1>
+<p><b>Before investing in new technology, discover the questions your organization should answer first.</b></p>
+<p>This assessment is most useful when the questions are discussed, not simply answered. Take your time. The purpose isn't to achieve a high score. It's to identify issues worth investigating before important technology decisions are made.</p>
+<div class="note"><b>Anonymous by design.</b> The assessment does not ask for identifying information.</div>
+<div class="note"><b>About the “select team.”</b> Throughout this assessment, “select team” means the people chosen to help define and evaluate the proposed change—not simply by title, but because they understand the affected work, are willing to identify problems candidly, and can help develop thoughtful solutions rather than simply identify complaints.</div></section>
 
 <form id="survey" class="card">
 <h2>About your situation</h2>
@@ -34,7 +36,7 @@ button{padding:11px 16px;border:0;border-radius:9px;font:inherit;font-weight:700
 <label>Implementation stage<select id="stage"><option>Prefer not to say</option><option>Considering</option><option>Planning</option><option>Technology selected</option><option>Implementing</option><option>Recently implemented</option></select></label>
 </div>
 <div id="questions"></div>
-<div class="q"><div class="qtitle">Optional comment</div><textarea id="comment" maxlength="300" placeholder="Optional comment (300 characters maximum)"></textarea></div>
+<div class="q"><div class="qtitle">Optional comment</div><textarea id="comment" maxlength="300" placeholder="Optional comment (300 characters maximum). Please do not include names, company names, email addresses, or phone numbers."></textarea></div>
 <div id="err" style="display:none;color:#8a4c45;font-weight:700">Please answer all 10 questions.</div>
 <button class="primary" type="submit">View my readiness result</button>
 </form>
@@ -42,53 +44,90 @@ button{padding:11px 16px;border:0;border-radius:9px;font:inherit;font-weight:700
 <section id="results" class="card">
 <div class="score" id="score"></div><div class="rating" id="rating"></div>
 <h3>Overall Assessment</h3><p id="summary"></p>
-<div class="analysis"><h3 style="margin-top:0">Your Answers Suggest</h3><p id="suggest"></p></div>
-<h3>Why This Matters</h3><p>Technology implementations rarely succeed on technology alone. Business objectives, process consistency, data, ownership, employee participation, available resources, and cross-functional decisions all influence whether the expected benefit is realized.</p>
+<div class="analysis"><h3 style="margin-top:0">Issues Worth Investigating Before You Select a Solution</h3><div id="suggest"></div></div>
+<h3>Why This Matters</h3><p>A technology decision can look sound while important questions about the underlying problem, the way work is actually performed, information quality, organizational tradeoffs, evidence, expected benefits, and total investment are still unresolved. Finding those issues before a major commitment preserves options and can prevent expensive rework later.</p>
 <div class="next"><b>Recommended Next Step</b><p id="next"></p></div>
-<p><b>Technology can automate a well-designed process, but it can also automate inefficiency.</b></p>
+<p><b>The purpose of this assessment is not to prove that your organization is ready. It is to expose what may still need to be understood.</b></p>
 
 <div id="feedback" class="next">
-<h3>Does this support your understanding of your organization's current issues?</h3>
+<h3>Did this assessment identify anything your organization should investigate before moving forward with a technology investment?</h3>
 <p class="small">Please select the response that best reflects your reaction.</p>
-<label class="fb"><input type="radio" name="fb" value="definitely"> Yes, definitely</label>
-<label class="fb"><input type="radio" name="fb" value="somewhat"> Somewhat</label>
-<label class="fb"><input type="radio" name="fb" value="not_really"> Not really</label>
-<label class="fb"><input type="radio" name="fb" value="no"> No</label>
+<label class="fb"><input type="radio" name="fb" value="definitely"> Yes — something significant</label>
+<label class="fb"><input type="radio" name="fb" value="somewhat"> Yes — one or two things worth investigating</label>
+<label class="fb"><input type="radio" name="fb" value="not_really"> Not really — we had already considered most of these issues</label>
+<label class="fb"><input type="radio" name="fb" value="no"> No — it did not identify anything new</label>
 <div id="fbthanks" style="display:none;font-weight:700;color:var(--navy)">Thank you. Your response has been recorded anonymously.</div>
 </div>
 
 <div class="actions"><button type="button" class="primary" onclick="print()">Print / Save as PDF</button><button type="button" class="secondary" onclick="location.reload()">Retake Assessment</button></div>
-<p class="small"><b>About this assessment:</b> Developed from more than three decades of real-world experience planning and managing technology and business-process implementations.</p>
+<p class="small"><b>About this assessment:</b> Designed to help organizations identify issues worth investigating before committing significant resources to technology-driven improvement. This is a methodology-based self-assessment, not an industry benchmark or vendor recommendation.</p>
 </section>
-
 
 </main>
 <script>
 const db=window.supabase.createClient("https://icsoflkmudcawmsljqze.supabase.co","sb_publishable_pi7LC83-hCXu7SITRo4D3A_KtS8oDej");
 let currentResponseId=null;
 const Q=[
-["How clearly has your organization defined what the technology implementation is expected to accomplish?","Business clarity"],
-["How well does your organization understand the business processes that will be affected?","Process maturity"],
-["How confident are you in the data that will support the new environment?","Data readiness"],
-["When a process or data issue requires a decision, how clear is it who has authority to make that decision?","Governance"],
-["How involved are the people who actually perform the work in defining how the future process should operate?","Change adoption"],
-["How much manual effort is required to keep information moving through your organization?","Process maturity"],
-["How prepared is the organization to provide knowledgeable employees with the time needed to participate?","Resource capacity"],
-["When departments have competing needs, how effectively can the organization make decisions for the overall business?","Organizational alignment"],
-["How does your organization balance immediate ROI with longer-term opportunity?","Strategic ROI"],
-["Which best describes how your organization approaches a major technology decision?","Strategic ROI"]];
-const opts=[
-["A",10,"Strongly established / clearly understood"],
-["B",5,"Partially established / some gaps remain"],
-["C",0,"Not yet clearly established / significant gaps remain"]];
-questions.innerHTML=Q.map((q,i)=>`<div class=q><div class=qtitle>${i+1}. ${q[0]}</div>${opts.map(o=>`<label class=opt><input type=radio name=q${i} value=${o[0]} data-score=${o[1]}> <span><b>${o[0]}</b> — ${o[2]}</span></label>`).join("")}</div>`).join("");
-survey.onsubmit=async e=>{e.preventDefault();let a=[],codes=[];for(let i=0;i<10;i++){let x=document.querySelector(`input[name=q${i}]:checked`);if(!x){err.style.display="block";return}a.push(+x.dataset.score);codes.push(x.value)}err.style.display="none";let t=a.reduce((x,y)=>x+y,0);score.textContent=t+"/100";rating.textContent=t>=85?"Strong Foundation":t>=70?"Generally Prepared":t>=50?"Preparation Needed":t>=30?"Significant Preparation Needed":"High Implementation Risk";summary.textContent=t>=70?"Many readiness conditions appear to be in place, although several areas still deserve attention before major commitments are made.":"Your responses indicate that several organizational conditions deserve attention before major implementation decisions become expensive or difficult to reverse.";let pairs=Q.map((q,i)=>[q[1],a[i]]).sort((x,y)=>x[1]-y[1]);let themes=[...new Set(pairs.map(x=>x[0]))].slice(0,2);const role=document.getElementById("role").value;const roleKey=(role==="Prefer not to say"||!role)?"General":role;const roleLens={
-"Executive":["From an executive perspective, these answers suggest that the organization may be moving toward a technology commitment before all of the business conditions needed to produce the expected return are firmly in place. The concern is not simply whether the system can be implemented; it is whether the organization is prepared to make the process, resource, ownership, and cross-functional decisions required to realize the investment.","Your weakest areas — "+themes.join(" and ")+" — deserve executive attention because unresolved issues here can become expensive after contracts, configuration, migration, or deployment are underway. Leadership should confirm that the expected business outcome is clear, accountable owners can make decisions, and the people whose knowledge is essential have enough capacity to participate.","The practical question for leadership is: are we funding only the technology, or are we also committing the organizational change needed to make the technology valuable?"],
-"Senior Manager":["From a senior-management perspective, your answers suggest a possible gap between strategic intent and the organization's ability to execute it consistently. Senior managers often become the point where executive expectations, departmental priorities, resource constraints, and implementation realities collide.","The areas of "+themes.join(" and ")+" may require more attention before the project accelerates. If ownership, priorities, or available people are unclear, managers can spend significant time negotiating decisions that should have been resolved earlier, while still being expected to maintain normal operations.","Your opportunity is to translate the desired business outcome into clear cross-functional decisions, resource commitments, and escalation paths before those issues begin controlling the implementation schedule."],
-"Manager":["From a management perspective, your answers suggest that the people responsible for day-to-day execution may be asked to absorb implementation work while continuing to deliver normal business results. That can make even a technically sound project difficult to execute.","The areas of "+themes.join(" and ")+" deserve particular attention. Managers need enough authority, time, and organizational support to resolve operational issues as they surface. Without that support, temporary workarounds can become permanent and important decisions may be deferred until they are more expensive to change.","Before implementation accelerates, clarify which decisions managers can make, which require escalation, which employees must participate, and what normal work will be reduced or reassigned."],
-"Functional Leader":["From a functional-leadership perspective, your answers suggest that the people closest to the affected work may see important operational issues that are not yet fully visible at higher levels of the organization. Those details matter because many small inefficiencies can combine into a process that is costly or difficult to automate well.","The areas of "+themes.join(" and ")+" may indicate that your function needs a stronger voice in defining the future process while still recognizing enterprise-wide tradeoffs. Protecting today's departmental method is not necessarily the goal; making sure the future method reflects real operational requirements is.","Document the few process decisions that matter most to your function, the consequences of each alternative, and the compromises you believe the organization can reasonably make. That gives leadership useful information rather than simply resistance to change."],
-"Technical Leader":["From a technical-leadership perspective, your answers suggest a risk that technology may be asked to compensate for unresolved business or organizational issues. Technical teams can make sound architecture, configuration, integration, and migration decisions and still produce the wrong business outcome if the decisions those choices depend upon have not been made.","The areas of "+themes.join(" and ")+" deserve attention before technical choices become difficult to reverse. Where business ownership or process agreement is weak, technical assumptions can quietly become business decisions without the appropriate business owners realizing it.","Before locking in major technical choices, identify the business decisions each choice depends upon and confirm that the appropriate owners have explicitly made them."],
-"General":["Your answers suggest that the organization has several readiness conditions worth examining before major implementation decisions become difficult or expensive to reverse.","The areas of "+themes.join(" and ")+" stand out most strongly. Weaknesses here can create avoidable cost, delay, resistance, rework, or lost ROI even when the selected technology performs as designed.","The next step is not necessarily to stop the project. It is to expose the unresolved business, process, people, data, and ownership questions early enough that the organization still has practical choices."]};suggest.innerHTML=roleLens[roleKey].map(x=>"<p>"+x+"</p>").join("");next.textContent=`Bring together the people who manage the affected work and the people who perform it. Focus first on ${themes.join(" and ")}, document disagreements or unknowns, and resolve those issues before assuming technology will solve them.`;
+{title:"Understanding the Problem Before the Solution",question:"Before considering specific technology solutions, how thoroughly have you defined the problems you are trying to solve and what meaningful improvement would actually look like?",theme:"Problem definition",opts:[
+["A",10,"We understand the specific problems, who and what they affect, why they matter, and the operational results we want to improve. We could evaluate a proposed solution against those needs and determine afterward whether meaningful improvement actually occurred."],
+["B",5,"We understand the major problems and have a general idea of the improvements we want, but some causes, impacts, priorities, or measures of success still need to be investigated."],
+["C",0,"We know there are problems with the current process or technology and have begun considering ways to improve or replace it, but we have not yet defined the problems and desired outcomes well enough to objectively determine which solution would address them best."]]},
+{title:"Understanding What Really Happens",question:"Before deciding how technology should improve your processes, how thoroughly have you examined how the work is actually performed today and why it is performed that way?",theme:"Current process reality",opts:[
+["A",10,"We have examined the work with the people who actually perform it. We understand the important steps, handoffs, exceptions and workarounds, including why they exist, what problems they solve, and where they create unnecessary effort or delay."],
+["B",5,"We understand the primary workflow and many of its problems, but some exceptions, workarounds, dependencies, or reasons behind existing practices have not been fully examined."],
+["C",0,"We primarily understand how the process is documented or generally believed to work. We have not yet examined enough of the day-to-day work to confidently distinguish necessary practices from unnecessary complexity, workarounds, or inefficiency."]]},
+{title:"Getting the Information Right",question:"For the processes you want to improve, how thoroughly has your select team identified the information the improved processes will require and the work necessary to make that information reliable?",theme:"Information readiness",opts:[
+["A",10,"We have identified the information the improved processes will require, including information not currently being used. We understand where it will come from and have examined its accuracy, consistency, and reliability sufficiently to know what must be corrected or improved."],
+["B",5,"We understand much of the information the improved processes will require, but some sources, inconsistencies, missing information, ownership, or reliability issues still need significant investigation."],
+["C",0,"We have not yet examined the information requirements in enough detail to know what additional information may be needed, where reliable information will come from, or how much work may be required to make it usable."]]},
+{title:"Resolving Competing Needs",question:"When an improvement that benefits the overall business requires one department or group to change a process that currently works well for them, how would that conflict be resolved?",theme:"Cross-functional decisions",opts:[
+["A",10,"The competing needs would be examined using the expected overall business impact. The people affected would participate in evaluating the tradeoffs, but there is clear authority to make and support a decision even when one group's preferred approach is not selected."],
+["B",5,"The groups involved would work toward a compromise that each could accept, even if the compromise reduces some of the overall benefit originally expected from the improvement."],
+["C",0,"Each group would be expected to protect its important requirements, with unresolved conflicts escalated or addressed as they arise during solution design or implementation."]]},
+{title:"Have the People Doing the Work Evaluated It?",question:"How thoroughly have the people who actually perform the processes you want to improve been involved in evaluating what works well today, what does not, and what should be improved?",theme:"Frontline evaluation",opts:[
+["A",10,"The people performing the work have helped examine the current processes in detail. They have identified what works well and should be preserved, what creates unnecessary effort or problems, why workarounds or exceptions exist, and where they believe meaningful improvement is possible."],
+["B",5,"People performing the work have identified many of the problems they encounter and suggested improvements, but there has not yet been a structured examination of what works well, what does not, why problems occur, and what should actually change."],
+["C",0,"The need for improvement has been defined primarily through management, technical teams, documented requirements, performance measures, or known system limitations. The people performing the work have not yet been substantially involved in evaluating the current processes and identifying what should be preserved or changed."]]},
+{title:"Where Is the Proof?",question:"What evidence does your select team have that the processes you want to improve actually have problems worth addressing?",theme:"Evidence of the problem",opts:[
+["A",10,"We have objective evidence such as measured delays, errors, rework, excessive labor, customer issues, missed commitments, unnecessary costs, capacity constraints, or other observable results that demonstrate where the processes are not performing as they should."],
+["B",5,"We have evaluated recurring concerns raised by several departments or people involved in the processes and have identified areas that appear to be causing significant problems, but we have not yet gathered enough objective information to quantify their extent, causes, or impact."],
+["C",0,"We generally believe the processes or technology need improvement, but that belief is based primarily on individual complaints, assumptions, aging technology, or the expectation that a newer approach should work better rather than evidence demonstrating a significant current problem."]]},
+{title:"What Is the Problem Costing You?",question:"How well does your select team understand the business impact of the problems identified in the processes you want to improve?",theme:"Business impact",opts:[
+["A",10,"We have evaluated the significant problems and quantified their impact where practical, including factors such as labor, rework, delays, quality, lost capacity, customer impact, missed opportunities, or direct cost. We can explain what these problems are costing the organization today."],
+["B",5,"We understand how the significant problems affect the organization and have estimated some of their impact, but important costs, consequences, or lost opportunities have not yet been quantified well enough to establish their overall business impact."],
+["C",0,"We know there are problems, but the people closest to them are primarily focused on completing their day-to-day responsibilities. We have not had the time or resources to step back and determine the broader impact of those problems or what they are actually costing the organization."]]},
+{title:"What Are You Assuming?",question:"When estimating the benefits of a proposed improvement, how thoroughly has your select team examined the assumptions behind those estimates?",theme:"Benefit assumptions",opts:[
+["A",10,"We distinguish between benefits supported by our own operational evidence and benefits that depend on assumptions. We have identified important variables—such as adoption, process changes, data quality, implementation effectiveness, and other dependencies—that could materially affect the results."],
+["B",5,"We have developed reasonable estimates using our current information and experience, but some expected benefits depend on assumptions or external information that we have not yet been able to independently validate."],
+["C",0,"Our expected benefits are based largely on vendor information, industry examples, benchmarks, demonstrations, or general expectations about what the technology should improve. We have not yet determined how closely those assumptions apply to our organization."]]},
+{title:"Do You Understand the Full Investment?",question:"How thoroughly has your select team evaluated what the organization will actually have to invest to successfully make the proposed improvement?",theme:"Full investment",opts:[
+["A",10,"We have evaluated the expected total investment, including technology costs as well as internal labor, lost productivity during implementation, new hardware or infrastructure, process changes, training, documentation, consulting fees, data preparation, integration, and ongoing support."],
+["B",5,"We understand the major technology and implementation costs and have considered some additional expenses, but we have not fully estimated the internal labor, lost productivity, training, process changes, documentation, consulting, infrastructure, or other resources that may be required."],
+["C",0,"Our estimate is based primarily on the technology purchase and vendor implementation costs. We have not yet evaluated the full cost of the internal effort, lost productivity, hardware, process changes, training, documentation, consulting, and other work necessary to successfully implement and sustain the improvement."]]},
+{title:"Are You Prepared to Make the Decision?",question:"Based on what your select team knows today, how prepared are you to recommend moving forward with a technology investment and defend that recommendation to executive management?",theme:"Decision readiness",opts:[
+["A",10,"We can clearly explain the problems being solved, provide evidence that they exist, describe their business impact, explain how the affected processes and information need to improve, identify the assumptions behind the expected benefits, and describe the full investment and organizational effort likely to be required."],
+["B",5,"We have a reasonable case for moving forward, but some important questions about the problems, business impact, processes, information, expected benefits, assumptions, costs, or organizational requirements still need further investigation before we could confidently defend the investment."],
+["C",0,"We believe change is needed and may already have identified promising technology, but we could not yet present a sufficiently evidence-based case explaining why this investment is the right response to the problems, what it is likely to require, and why the organization should make the investment now."]]}
+];
+questions.innerHTML=Q.map((q,i)=>{
+const block=`<div class=q><div class=qtitle>${i+1}. ${q.title}</div><p class=qprompt><b>${q.question}</b></p>${q.opts.map(o=>`<label class=opt><input type=radio name=q${i} value=${o[0]} data-score=${o[1]}> <span><b>${o[0]}</b> — ${o[2]}</span></label>`).join("")}</div>`;
+const guide=i===3?`<div class=guidance><b>Guidance:</b> If a question exposes uncertainty or disagreement within your team, don't treat that as a poor result. You may have identified something worth resolving before selecting a solution.</div>`:"";
+return block+guide}).join("");
+
+survey.onsubmit=async e=>{e.preventDefault();let a=[],codes=[];for(let i=0;i<10;i++){let x=document.querySelector(`input[name=q${i}]:checked`);if(!x){err.style.display="block";return}a.push(+x.dataset.score);codes.push(x.value)}err.style.display="none";let t=a.reduce((x,y)=>x+y,0);score.textContent=t+"/100";rating.textContent=t>=85?"Strong Foundation":t>=70?"Generally Prepared":t>=50?"Preparation Needed":t>=30?"Significant Preparation Needed":"High Implementation Risk";summary.textContent=t>=70?"Many of the conditions needed to support a sound technology decision appear to be in place, although the answers that were not A responses deserve investigation before major commitments are made.":"Your responses indicate that several important business, process, information, evidence, cost, or decision conditions deserve further investigation before a major technology commitment is made.";
+let pairs=Q.map((q,i)=>[q.theme,a[i],i]).sort((x,y)=>x[1]-y[1]);let themes=[...new Set(pairs.map(x=>x[0]))].slice(0,2);let weak=pairs.filter(x=>x[1]<10).map(x=>x[0]);
+const role=document.getElementById("role").value;const roleKey=(role==="Prefer not to say"||!role)?"General":role;
+const roleIntro={
+"Executive":"From an executive perspective, the key question is whether the organization can defend this investment using its own evidence—not simply a vendor's claims or a general desire to modernize.",
+"Senior Manager":"From a senior-management perspective, the answers should reveal where strategic intent may still depend on unresolved operational facts, cross-functional decisions, or assumptions.",
+"Manager":"From a management perspective, the answers should reveal where day-to-day reality may not yet be reflected in the proposed investment case.",
+"Functional Leader":"From a functional-leadership perspective, the answers should reveal whether the people closest to the work have helped distinguish what should be preserved from what should actually change.",
+"Technical Leader":"From a technical-leadership perspective, the answers should reveal where technology may be at risk of becoming the answer to business, process, information, or governance questions that have not yet been resolved.",
+"General":"Your answers should help identify where the organization may need more evidence or investigation before a major technology decision becomes expensive to reverse."};
+let detail=weak.length?`The strongest areas for further investigation are ${themes.join(" and ")}. Other non-A responses may also represent useful discussion points for the select team.`:"Your responses indicate that the major issues in this assessment have been considered. The next test is whether the evidence behind those answers is strong enough to withstand cross-functional and executive scrutiny.";
+suggest.innerHTML=`<p>${roleIntro[roleKey]}</p><p>${detail}</p>`;
+next.textContent=weak.length?`Bring the select team together and investigate ${themes.join(" and ")} first. Treat disagreement, missing evidence, and untested assumptions as findings—not as failures—and resolve them before assuming the technology choice is the next decision.`:"Document the evidence behind the answers, challenge the assumptions, and confirm that the business case still holds before making the technology commitment.";
 currentResponseId=crypto.randomUUID();const row={id:currentResponseId,role:role==="Prefer not to say"?null:role,company_size:size.value==="Prefer not to say"?null:size.value,industry:industry.value==="Prefer not to say"?null:industry.value,implementation_stage:stage.value==="Prefer not to say"?null:stage.value,total_score:t,primary_issue:themes[0]||null,secondary_issue:themes[1]||null,comment:comment.value.trim()||null};codes.forEach((c,i)=>row[`q${i+1}`]=c);const {error}=await db.from("survey_responses").insert(row);if(error){console.error(error)}results.style.display="block";results.scrollIntoView({behavior:"smooth"})};
+
 document.querySelectorAll("input[name=fb]").forEach(x=>x.onchange=async()=>{fbthanks.style.display="block";if(currentResponseId){const {error}=await db.from("survey_feedback").insert({response_id:currentResponseId,result_validation:x.value});if(error)console.error(error)}});
 </script></body></html>
