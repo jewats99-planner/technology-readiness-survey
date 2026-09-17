@@ -1,0 +1,34 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Technology Investment Reality Check — V2 Integrated Test</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>html,body{margin:0;height:100%;background:#f3f0e8}iframe{display:block;width:100%;height:100vh;border:0}</style></head><body><iframe id="assessment" src="v2-preview.html" title="Technology Investment Reality Check V2"></iframe><script>
+const db=window.supabase.createClient('https://icsoflkmudcawmsljqze.supabase.co','sb_publishable_pi7LC83-hCXu7SITRo4D3A_KtS8oDej');
+const VERSION='2.0';
+const sessionId=crypto.randomUUID();
+let started=false,completed=false;
+async function event(type,section=null,metadata=null){try{await db.from('assessment_events').insert({session_id:sessionId,assessment_version:VERSION,event_type:type,section_number:section,metadata});}catch(e){console.error('event',e)}}
+event('visit',null,{page:'v2-integrated-test'});
+const frame=document.getElementById('assessment');
+frame.addEventListener('load',()=>{
+ const d=frame.contentDocument;
+ const preview=[...d.querySelectorAll('p.small')].find(p=>p.textContent.includes('V2.0 preview'));
+ if(preview) preview.innerHTML='<b>V2.0 database integration test.</b> Your anonymous answers will be saved to verify the assessment data path.';
+ const form=d.getElementById('survey');
+ const button=form.querySelector('button[type=submit]');
+ const status=d.createElement('div'); status.id='dbstatus'; status.style.cssText='margin-top:12px;font-weight:700;color:#24384a'; button.insertAdjacentElement('afterend',status);
+ form.addEventListener('change',async e=>{if(e.target.matches('input[type=radio]')&&!started){started=true;await event('start');}},true);
+ form.addEventListener('submit',async e=>{
+   if(completed)return;
+   const answers=[]; for(let i=1;i<=18;i++){const x=d.querySelector(`input[name=q${i}]:checked`);if(!x)return;answers.push(x.value)}
+   completed=true; status.textContent='Saving your anonymous V2 response…';
+   const counts={Established:0,Investigate:0,Priority:0};
+   answers.forEach(a=>{if(a==='A')counts.Established++;else if(a==='B')counts.Investigate++;else counts.Priority++;});
+   const row={assessment_version:VERSION,established_count:counts.Established,investigate_count:counts.Investigate,priority_count:counts.Priority,diagnostic_summary:{model:'v2-diagnostic',answers:answers.map((a,i)=>({question:i+1,answer:a,status:a==='A'?'Established':a==='B'?'Investigate':'Priority Investigation'}))}};
+   answers.forEach((a,i)=>row['q'+(i+1)]=a);
+   try{
+     const {error}=await db.from('survey_responses').insert(row);
+     if(error)throw error;
+     await event('complete',null,{established:counts.Established,investigate:counts.Investigate,priority:counts.Priority});
+     status.textContent='✓ V2 response saved successfully to the assessment database.';
+     status.style.color='#2f6b3b';
+   }catch(err){completed=false;console.error(err);status.textContent='Database save failed. Your diagnostic result is still available, but this test response was not recorded. Error: '+(err.message||err);status.style.color='#8a4c45';}
+ },true);
+});
+</script></body></html>
