@@ -81,9 +81,14 @@ const row={id:currentResponseId,assessment_version:assessmentVersion,role:clean(
 const shown=[['Decision-maker level',role],['Organization size',size],['Industry',industry],['Technology decision stage',stage]].filter(x=>x[1]!=='Prefer not to say');
 document.getElementById('printProfile').innerHTML='<h3>Assessment context</h3><p><b>Date:</b> '+new Date().toLocaleDateString()+'</p>'+(shown.length?'<p>'+shown.map(x=>'<b>'+x[0]+':</b> '+x[1]).join(' &nbsp; · &nbsp; ')+'</p>':'');
 ans.forEach((v,i)=>row['q'+(i+1)]=v);
-const {error}=await db.from("survey_responses").insert(row);
-if(error){console.error(error);alert("Your result was calculated, but the anonymous response could not be saved. Please try again.");return}
-await track("complete",7,currentResponseId,{established:counts.Established,investigate:counts.Investigate,priority:counts['Priority Investigation']});
-document.getElementById('survey').style.display='none';document.getElementById('results').style.display='block';scrollTo({top:0,behavior:'smooth'})});
+document.getElementById('survey').style.display='none';
+document.getElementById('results').style.display='block';
+document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+try{
+  const {error}=await db.from("survey_responses").insert(row);
+  if(error){console.error(error)}
+  else{await track("complete",7,currentResponseId,{established:counts.Established,investigate:counts.Investigate,priority:counts['Priority Investigation']})}
+}catch(saveError){console.error(saveError)}
+});
 document.getElementById('printReport').addEventListener('click',()=>{try{const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'pt',format:'letter'});const margin=54,pageW=612,pageH=792,maxW=pageW-margin*2;let y=58;const add=(txt,size=10,bold=false,gap=5)=>{doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);const lines=doc.splitTextToSize(String(txt||'').trim(),maxW);for(const line of lines){if(y>pageH-54){doc.addPage();y=58}doc.text(line,margin,y);y+=size*1.35}y+=gap};add('Technology Investment Decision Roadmap',18,true,12);const profile=document.getElementById('printProfile').innerText;add(profile,9,false,12);const summary=document.getElementById('summary');summary.querySelectorAll('h2,h3,p,.finding,.next').forEach(el=>{const t=el.innerText.trim();if(!t)return;if(el.matches('h2'))add(t,14,true,8);else if(el.matches('h3'))add(t,11,true,5);else add(t,10,false,7)});const exec=document.querySelector('#results .analysis');if(exec){add('Executive Test',14,true,8);add(exec.innerText,10,false,7)}doc.save('Technology-Investment-Decision-Roadmap.pdf');document.getElementById('printStatus').textContent=' PDF saved.';track("report_print",7,currentResponseId)}catch(e){console.error(e);document.getElementById('printStatus').textContent=' PDF could not be created. Please try again.'}});
 </script></body></html>
