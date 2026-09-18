@@ -85,5 +85,5 @@ const {error}=await db.from("survey_responses").insert(row);
 if(error){console.error(error);alert("Your result was calculated, but the anonymous response could not be saved. Please try again.");return}
 await track("complete",7,currentResponseId,{established:counts.Established,investigate:counts.Investigate,priority:counts['Priority Investigation']});
 document.getElementById('survey').style.display='none';document.getElementById('results').style.display='block';scrollTo({top:0,behavior:'smooth'})});
-document.getElementById('printReport').addEventListener('click',async()=>{await track("report_print",7,currentResponseId);window.print()});
+document.getElementById('printReport').addEventListener('click',()=>{track("report_print",7,currentResponseId);window.print()});
 </script></body></html>
