@@ -7,8 +7,20 @@
 const db=window.supabase.createClient("https://icsoflkmudcawmsljqze.supabase.co","sb_publishable_pi7LC83-hCXu7SITRo4D3A_KtS8oDej");
 const assessmentVersion="2.0";
 const sessionId=crypto.randomUUID();
+const urlParams=new URLSearchParams(location.search);
+const attribution={
+  source:urlParams.get("utm_source")||urlParams.get("source")||null,
+  campaign:urlParams.get("utm_campaign")||urlParams.get("campaign")||null,
+  quick_check_session:urlParams.get("qc")||null
+};
 let currentResponseId=null;
-const track=async(event_type,section_number=null,response_id=null,metadata=null)=>{try{await db.from("assessment_events").insert({session_id:sessionId,assessment_version:assessmentVersion,event_type,section_number,response_id,metadata})}catch(e){console.error(e)}};
+const track=async(event_type,section_number=null,response_id=null,metadata=null)=>{
+  try{
+    const merged={...attribution,...(metadata||{})};
+    const cleanMetadata=Object.values(merged).some(v=>v!==null&&v!==undefined&&v!=="")?merged:null;
+    await db.from("assessment_events").insert({session_id:sessionId,assessment_version:assessmentVersion,event_type,section_number,response_id,metadata:cleanMetadata});
+  }catch(e){console.error(e)}
+};
 track("visit");
 const sections=['Understand Why You Are Changing','Understand What Really Happens','Understand the Information and the Future','Determine Whether You Have the Right Knowledge','Determine Whether the Organization Can Make the Change','Challenge the Business Case','Decide What to Do Next'];
 const Q=[
