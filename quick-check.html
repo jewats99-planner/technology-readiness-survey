@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Technology Change Quick Check</title>
+<style>
+:root{--navy:#24384a;--gold:#a89562;--cream:#f3f0e8;--paper:#fffdf8;--ink:#27323b;--line:#d8d1c1;--soft:#edf2f4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Segoe UI,Arial,sans-serif}
+main{max-width:760px;margin:auto;padding:22px 14px 46px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:16px}
+h1,h2,h3{color:var(--navy)}h1{margin:0 0 10px;font-size:30px}
+.lead{font-size:18px;line-height:1.5;margin-bottom:8px}
+.small{font-size:13px;color:#69737d}
+.q{padding:19px 0;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:0}
+.qtitle{font-size:19px;font-weight:700;color:var(--navy);margin-bottom:7px}
+.qprompt{line-height:1.45;margin-bottom:12px}
+.choice{display:block;padding:12px;margin:8px 0;border:1px solid var(--line);border-radius:9px;background:#fff;cursor:pointer}
+.choice input{margin-right:8px}
+button,.cta{display:inline-block;border:0;border-radius:9px;padding:12px 17px;font:inherit;font-weight:700;cursor:pointer;background:var(--navy);color:#fff;text-decoration:none}
+#result{display:none}
+.resultBox{background:var(--soft);border-left:5px solid var(--gold);border-radius:9px;padding:16px;margin:16px 0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.secondary{background:#e8e5dc;color:var(--navy)}
+#err{display:none;color:#8a4c45;font-weight:700;margin:10px 0}
+@media(max-width:600px){.card{padding:18px}h1{font-size:26px}.lead{font-size:17px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<main>
+<section class="card" id="intro">
+<h1>Before you commit to the technology, can you answer these three questions?</h1>
+<p class="lead">This quick check takes about a minute. It is designed to expose uncertainty before a technology decision becomes expensive to reverse.</p>
+<p class="small"><b>No registration. No email. No company information. No sales pitch.</b></p>
+</section>
+
+<form id="quickForm" class="card">
+<div class="q">
+<div class="qtitle">1. Are we certain we understand the problem?</div>
+<div class="qprompt">Can we clearly explain what is not working, who it affects, and what evidence shows the problem is significant?</div>
+<label class="choice"><input type="radio" name="q1" value="yes"> Yes</label>
+<label class="choice"><input type="radio" name="q1" value="somewhat"> Somewhat</label>
+<label class="choice"><input type="radio" name="q1" value="not_yet"> Not yet</label>
+</div>
+
+<div class="q">
+<div class="qtitle">2. Have we heard from everyone the change will affect?</div>
+<div class="qprompt">Do our requirements reflect the needs of the organization—not just the department sponsoring the project?</div>
+<label class="choice"><input type="radio" name="q2" value="yes"> Yes</label>
+<label class="choice"><input type="radio" name="q2" value="somewhat"> Somewhat</label>
+<label class="choice"><input type="radio" name="q2" value="not_yet"> Not yet</label>
+</div>
+
+<div class="q">
+<div class="qtitle">3. Do we understand what making the change will really require?</div>
+<div class="qprompt">Do we understand the people, time, process changes, assumptions, internal effort and total investment—not just the technology purchase?</div>
+<label class="choice"><input type="radio" name="q3" value="yes"> Yes</label>
+<label class="choice"><input type="radio" name="q3" value="somewhat"> Somewhat</label>
+<label class="choice"><input type="radio" name="q3" value="not_yet"> Not yet</label>
+</div>
+
+<div id="err">Please answer all three questions.</div>
+<button type="submit">See what your answers suggest</button>
+</form>
+
+<section id="result" class="card">
+<h2>Your Quick Check</h2>
+<div id="resultText" class="resultBox"></div>
+<p><b>If one of these questions made you hesitate, that may be worth understanding before you make the larger commitment.</b></p>
+<p>The full Technology Investment Reality Check goes deeper into the problem, requirements, people, information, assumptions, organizational capacity and total investment.</p>
+<div class="actions">
+<a href="#" id="fullAssessment" class="cta">Take the full 18-question assessment</a>
+<button type="button" class="secondary" onclick="location.reload()">Retake Quick Check</button>
+</div>
+</section>
+</main>
+
+<script>
+const db=window.supabase.createClient("https://icsoflkmudcawmsljqze.supabase.co","sb_publishable_pi7LC83-hCXu7SITRo4D3A_KtS8oDej");
+const sessionId=crypto.randomUUID();
+const params=new URLSearchParams(location.search);
+const source=params.get("utm_source")||params.get("source")||"direct";
+const campaign=params.get("utm_campaign")||params.get("campaign")||null;
+let started=false;
+
+async function trackQuick(event_type,answers=null,metadata=null){
+  try{
+    await db.from("quick_check_events").insert({
+      session_id:sessionId,
+      event_type,
+      source,
+      campaign,
+      answers,
+      metadata
+    });
+  }catch(e){console.error(e)}
+}
+trackQuick("visit");
+
+document.getElementById("quickForm").addEventListener("change",()=>{
+  if(!started){started=true;trackQuick("start")}
+});
+
+document.getElementById("quickForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const answers={};
+  for(let i=1;i<=3;i++){
+    const x=document.querySelector('input[name="q'+i+'"]:checked');
+    if(!x){document.getElementById("err").style.display="block";return}
+    answers["q"+i]=x.value;
+  }
+  document.getElementById("err").style.display="none";
+
+  const concerns=Object.values(answers).filter(v=>v!=="yes").length;
+  let html="";
+  if(concerns===0){
+    html="<h3>You appear to have a solid starting point.</h3><p>The next question is whether those answers hold up when you examine the details and assumptions behind them.</p>";
+  }else if(concerns===1){
+    html="<h3>You may have found something worth resolving before you proceed.</h3><p>One uncertainty does not mean the project should stop. Discovering it now is much less expensive than discovering it during implementation.</p>";
+  }else{
+    html="<h3>There may be more to understand before the technology decision is made.</h3><p>The concern is not necessarily the technology. It is whether the organization has defined the problem, requirements and change well enough to make a sound decision.</p>";
+  }
+  document.getElementById("resultText").innerHTML=html;
+  document.getElementById("quickForm").style.display="none";
+  document.getElementById("result").style.display="block";
+  document.getElementById("result").scrollIntoView({behavior:"smooth",block:"start"});
+  await trackQuick("complete",answers,{concerns});
+
+  const full=new URL("https://jewats99-planner.github.io/technology-readiness-survey/");
+  full.searchParams.set("utm_source",source);
+  if(campaign)full.searchParams.set("utm_campaign",campaign);
+  full.searchParams.set("qc",sessionId);
+  document.getElementById("fullAssessment").href=full.toString();
+});
+
+document.getElementById("fullAssessment").addEventListener("click",async e=>{
+  e.preventDefault();
+  const href=e.currentTarget.href;
+  await trackQuick("full_assessment_click");
+  location.href=href;
+});
+</script>
+</body>
+</html>
